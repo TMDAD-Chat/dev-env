@@ -1,0 +1,108 @@
+version: "3.2"
+services:
+  rabbitmq:
+    build: ./rabbit
+    container_name: 'rabbitmq'
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15692:15692"
+    volumes:
+      - ./.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ./.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+  web:
+    image: nginx
+    ports:
+      - "8443:443"
+      - "8000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    command: [ nginx-debug, '-g', 'daemon off;' ]
+  db:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./.docker-conf/postgresql/data:/var/lib/postgresql/data
+  prometheus:
+    image: prom/prometheus
+    restart: on-failure
+    hostname: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  postgres-exporter:
+    image: wrouesnel/postgres_exporter
+    hostname: postgres_exporter
+    restart: always
+    environment:
+      #- DATA_SOURCE_NAME=postgresql://postgres:password@postgres-db:5432/postgres?sslmode=disable
+      - DATA_SOURCE_URI=db:5432/postgres?sslmode=disable
+      - DATA_SOURCE_USER=postgres
+      - DATA_SOURCE_PASS=postgres
+    ports:
+      - "9187:9187"
+    depends_on:
+      - db
+
+  grafana:
+    image: grafana/grafana
+    restart: on-failure
+    hostname: grafana
+    ports:
+      - "3000:3000"
+
+  file-api:
+    build: ../file-api
+    container_name: 'file-api'
+    ports:
+      - "8082:8080"
+
+  message-pcs:
+    build: ../message-pcs
+    container_name: 'message-pcs'
+    environment:
+      - "SPRING.RABBITMQ.HOST=rabbitmq"
+    ports:
+      - "8083:8080"
+
+  message-push-api:
+    build: ../message-push-api
+    container_name: 'message-push-api'
+    environment:
+      - "SPRING.RABBITMQ.HOST=rabbitmq"
+      - "SPRING.DATASOURCE.URL=jdbc:postgresql://db:5432/message-push-api"
+    ports:
+      - "8081:8080"
+
+  message-receiver-api:
+    build: ../message-receiver-api
+    container_name: 'message-receiver-api'
+    environment:
+      - "SPRING.RABBITMQ.HOST=rabbitmq"
+      - "SPRING.DATASOURCE.URL=jdbc:postgresql://db:5432/message-receiver-api"
+    ports:
+      - "8080:8080"
+
+  trending-topic-api:
+    build: ../trending-topic-api
+    container_name: 'trending-topic-api'
+    environment:
+      - "SPRING.RABBITMQ.HOST=rabbitmq"
+    ports:
+      - "8084:8080"
+
+  user-api:
+    build: ../user-api
+    container_name: 'user-api'
+    environment:
+      - "SPRING.RABBITMQ.HOST=rabbitmq"
+      - "SPRING.DATASOURCE.URL=jdbc:postgresql://db:5432/user-api"
+    ports:
+      - "8085:8080"
