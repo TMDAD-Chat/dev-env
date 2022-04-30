@@ -55,8 +55,12 @@ services:
     image: grafana/grafana
     restart: on-failure
     hostname: grafana
+    environment:
+      - GF_INSTALL_PLUGINS=magnesium-wordcloud-panel
     ports:
       - "3000:3000"
+    volumes:
+      - ./.docker-conf/grafana/data:/var/lib/grafana
 
   file-api:
     build: ../file-api
@@ -95,6 +99,7 @@ services:
     container_name: 'trending-topic-api'
     environment:
       - "SPRING.RABBITMQ.HOST=rabbitmq"
+      - "SPRING.DATASOURCE.URL=jdbc:postgresql://db:5432/trending-topics-api"
     ports:
       - "8084:8080"
 

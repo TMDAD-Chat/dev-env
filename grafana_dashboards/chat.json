@@ -92,7 +92,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "c25P3ts7k"
+                "uid": "eOcssxw7k"
               },
               "exemplar": true,
               "expr": "users_online",
@@ -162,7 +162,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "c25P3ts7k"
+                "uid": "eOcssxw7k"
               },
               "exemplar": true,
               "expr": "rooms_online",
@@ -264,7 +264,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "c25P3ts7k"
+            "uid": "eOcssxw7k"
           },
           "exemplar": true,
           "expr": "sum(messages_in_amount_total) by (service)",
@@ -349,7 +349,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "c25P3ts7k"
+            "uid": "eOcssxw7k"
           },
           "exemplar": true,
           "expr": "rate(messages_in_amount_total[1m])",
@@ -438,7 +438,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "c25P3ts7k"
+            "uid": "eOcssxw7k"
           },
           "exemplar": true,
           "expr": "sum(messages_in_bytes_total) by (service)",
@@ -524,7 +524,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "c25P3ts7k"
+            "uid": "eOcssxw7k"
           },
           "exemplar": true,
           "expr": "rate(messages_in_bytes_total[1m])",
@@ -624,7 +624,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "c25P3ts7k"
+            "uid": "eOcssxw7k"
           },
           "exemplar": true,
           "expr": "sum(messages_out_amount_total) by (service)",
@@ -709,7 +709,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "c25P3ts7k"
+            "uid": "eOcssxw7k"
           },
           "exemplar": true,
           "expr": "rate(messages_out_amount_total[1m])",
@@ -796,7 +796,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "c25P3ts7k"
+            "uid": "eOcssxw7k"
           },
           "exemplar": true,
           "expr": "sum(messages_out_bytes_total) by (service)",
@@ -881,7 +881,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "c25P3ts7k"
+            "uid": "eOcssxw7k"
           },
           "exemplar": true,
           "expr": "rate(messages_out_bytes_total[1m])",
