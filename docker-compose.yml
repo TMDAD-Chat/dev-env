@@ -65,8 +65,16 @@ services:
   file-api:
     build: ../file-api
     container_name: 'file-api'
+    hostname: fileapi
+    environment:
+      - "FIREBASE.BUCKET-NAME=tmdad-angel-local.appspot.com"
+      - "FIREBASE.SERVICE-ACCOUNT=/opt/firebase.json"
     ports:
       - "8082:8080"
+    expose:
+      - "8080"
+    volumes:
+      - ./firebase.json:/opt/firebase.json
 
   message-pcs:
     build: ../message-pcs
@@ -91,6 +99,7 @@ services:
     environment:
       - "SPRING.RABBITMQ.HOST=rabbitmq"
       - "SPRING.DATASOURCE.URL=jdbc:postgresql://db:5432/message-receiver-api"
+      - "CHAT.FILE-API=http://fileapi:8080"
     ports:
       - "8080:8080"
 
