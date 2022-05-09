@@ -8,6 +8,10 @@ services:
       - "15672:15672"
       - "15692:15692"
     volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.config
+      - ./certs/rabbitmq.crt:/opt/server_public.crt:ro
+      - ./certs/rabbitmq.key:/opt/server_private.key:ro
+      - ./certs/rootCAPublic.pem:/opt/ca.pem:ro
       - ./.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
       - ./.docker-conf/rabbitmq/log/:/var/log/rabbitmq
   web:
@@ -16,6 +20,9 @@ services:
       - "8443:443"
       - "8000:80"
     volumes:
+      - ./certs/rootCAPublic.pem:/etc/nginx/ca.pem
+      - ./certs/gateway.crt:/etc/nginx/ssl/server.crt
+      - ./certs/gateway.key:/etc/nginx/ssl/server.key
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     command: [ nginx-debug, '-g', 'daemon off;' ]
   db:
@@ -35,7 +42,9 @@ services:
     ports:
       - "9090:9090"
     volumes:
+      - ./certs/rootCAPublic.pem:/opt/ca.pem
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./.docker-conf/prometheus/data:/prometheus
 
   postgres-exporter:
     image: wrouesnel/postgres_exporter
@@ -61,62 +70,87 @@ services:
       - "3000:3000"
     volumes:
       - ./.docker-conf/grafana/data:/var/lib/grafana
+      #- ./.docker-conf/grafana/home:/usr/share/grafana
+      - ./.docker-conf/grafana/logs:/var/log/grafana
 
   file-api:
     build: ../file-api
     container_name: 'file-api'
-    hostname: fileapi
+    hostname: file-api
     environment:
       - "FIREBASE.BUCKET-NAME=tmdad-angel-local.appspot.com"
       - "FIREBASE.SERVICE-ACCOUNT=/opt/firebase.json"
     ports:
-      - "8082:8080"
+      - "8082:8443"
     expose:
-      - "8080"
+      - "8443"
     volumes:
       - ./firebase.json:/opt/firebase.json
+      - ./certs/file-api.p12:/opt/file-api.p12
 
   message-pcs:
     build: ../message-pcs
     container_name: 'message-pcs'
     environment:
       - "SPRING.RABBITMQ.HOST=rabbitmq"
+      - "SPRING.RABBITMQ.PORT=5672"
+      - "SPRING.RABBITMQ.SSL.ENABLED=true"
     ports:
       - "8083:8080"
+    volumes:
+      - ./certs/message-pcs.p12:/opt/message-pcs.p12
 
   message-push-api:
     build: ../message-push-api
     container_name: 'message-push-api'
     environment:
       - "SPRING.RABBITMQ.HOST=rabbitmq"
+      - "SPRING.RABBITMQ.PORT=5672"
+      - "SPRING.RABBITMQ.SSL.ENABLED=true"
       - "SPRING.DATASOURCE.URL=jdbc:postgresql://db:5432/message-push-api"
     ports:
-      - "8081:8080"
+      - "8081:8443"
+    volumes:
+      - ./certs/message-push-api.p12:/opt/message-push-api.p12
 
   message-receiver-api:
     build: ../message-receiver-api
     container_name: 'message-receiver-api'
     environment:
       - "SPRING.RABBITMQ.HOST=rabbitmq"
+      - "SPRING.RABBITMQ.PORT=5672"
+      - "SPRING.RABBITMQ.SSL.ENABLED=true"
       - "SPRING.DATASOURCE.URL=jdbc:postgresql://db:5432/message-receiver-api"
-      - "CHAT.FILE-API=http://fileapi:8080"
+      - "CHAT.FILE-API=https://file-api:8443"
     ports:
-      - "8080:8080"
+      - "8080:8443"
+    volumes:
+      - ./certs/message-receiver-api.p12:/opt/message-receiver-api.p12
+      - ./certs/message-receiver-api.key:/opt/message-receiver-api.key
+      - ./certs/message-receiver-api.crt:/opt/message-receiver-api.crt
 
   trending-topic-api:
     build: ../trending-topic-api
     container_name: 'trending-topic-api'
     environment:
       - "SPRING.RABBITMQ.HOST=rabbitmq"
+      - "SPRING.RABBITMQ.PORT=5672"
+      - "SPRING.RABBITMQ.SSL.ENABLED=true"
       - "SPRING.DATASOURCE.URL=jdbc:postgresql://db:5432/trending-topics-api"
     ports:
       - "8084:8080"
+    volumes:
+      - ./certs/trending-topic-api.p12:/opt/trending-topic-api.p12
 
   user-api:
     build: ../user-api
     container_name: 'user-api'
     environment:
       - "SPRING.RABBITMQ.HOST=rabbitmq"
+      - "SPRING.RABBITMQ.PORT=5672"
+      - "SPRING.RABBITMQ.SSL.ENABLED=true"
       - "SPRING.DATASOURCE.URL=jdbc:postgresql://db:5432/user-api"
     ports:
-      - "8085:8080"
+      - "8085:8443"
+    volumes:
+      - ./certs/user-api.p12:/opt/user-api.p12
