@@ -1,2 +1,5 @@
 .docker-conf
 firebase.json
+generate_certs.sh
+certs
+.env
